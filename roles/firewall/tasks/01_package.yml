@@ -1,0 +1,13 @@
+---
+# 1) 패키지 설치
+# CentOS 환경 확인 후 firewalld 패키지를 설치한다.
+
+- name: 1-0) CentOS 환경 확인
+  ansible.builtin.fail:
+    msg: "이 role은 CentOS 환경 기준으로 작성됨"
+  when: ansible_distribution != "CentOS"
+
+- name: 1-1) firewall 패키지 설치 - firewalld
+  ansible.builtin.dnf:
+    name: "{{ firewall_packages }}"
+    state: present

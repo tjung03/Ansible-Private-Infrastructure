@@ -1,0 +1,21 @@
+---
+galaxy_info:
+  author: tjung03
+  description: Configure BIND DNS server for private infrastructure
+  company: private
+  license: MIT
+  min_ansible_version: "2.14"
+
+  platforms:
+    - name: EL
+      versions:
+        - "9"
+
+  galaxy_tags:
+    - dns
+    - bind
+    - named
+    - centos
+    - infrastructure
+
+dependencies: []

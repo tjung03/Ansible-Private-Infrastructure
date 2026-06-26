@@ -1,0 +1,20 @@
+---
+# WEB role test
+# role 적용 후 HTTP 200 응답을 최소 확인한다.
+
+- name: WEB role test
+  hosts: webservers
+  gather_facts: true
+
+  tasks:
+    - name: WEB role 실행
+      ansible.builtin.include_role:
+        name: web
+        public: true
+
+    - name: WEB HTTP 응답 확인 - {{ web_test_url }}
+      ansible.builtin.uri:
+        url: "{{ web_test_url }}"
+        status_code: 200
+        return_content: true
+      register: web_test_result

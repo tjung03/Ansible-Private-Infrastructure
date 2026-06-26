@@ -1,0 +1,3 @@
+---
+# WEB role handlers
+# 현재 role은 /etc/httpd/conf/httpd.conf를 직접 수정하지 않으므로 handler를 사용하지 않는다.

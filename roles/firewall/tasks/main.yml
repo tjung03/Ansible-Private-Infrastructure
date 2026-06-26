@@ -1,0 +1,12 @@
+---
+# FIREWALL role main tasks
+# 1) 패키지 설치
+# 2) 서비스 기동
+
+- name: 1) 패키지 설치 작업 포함
+  ansible.builtin.include_tasks:
+    file: 01_package.yml
+
+- name: 2) 서비스 기동 작업 포함
+  ansible.builtin.include_tasks:
+    file: 02_service.yml

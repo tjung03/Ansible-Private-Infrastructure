@@ -1,0 +1,16 @@
+---
+# MAIL role vars
+# CentOS Stream 9 + Postfix + Dovecot 기준으로 role 내부에서 고정적으로 사용할 값을 정의한다.
+
+mail_packages:
+  - postfix
+  - dovecot
+
+mail_services:
+  - postfix
+  - dovecot
+
+mail_postfix_config_file: /etc/postfix/main.cf
+mail_dovecot_config_file: /etc/dovecot/dovecot.conf
+mail_dovecot_mail_config_file: /etc/dovecot/conf.d/10-mail.conf
+mail_dovecot_auth_config_file: /etc/dovecot/conf.d/10-auth.conf

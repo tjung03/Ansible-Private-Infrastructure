@@ -1,0 +1,22 @@
+---
+# 3) 서비스 설정
+# 웹 문서 루트를 확인하고 기본 index 파일을 생성한다.
+# /etc/httpd/conf/httpd.conf 원본 설정은 직접 수정하지 않는다.
+
+- name: 3-1) 웹 문서 루트 디렉토리 생성 - {{ web_document_root }}
+  ansible.builtin.file:
+    path: "{{ web_document_root }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: 3-2) 기본 index 파일 생성 - {{ web_document_root }}/{{ web_index_file }}
+  ansible.builtin.copy:
+    content: "{{ web_index_content }}"
+    dest: "{{ web_document_root }}/{{ web_index_file }}"
+    owner: root
+    group: root
+    mode: '0644'
+    backup: true
+  when: web_manage_index | bool

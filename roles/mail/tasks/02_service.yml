@@ -1,0 +1,10 @@
+---
+# 2) 서비스 기동
+# postfix, dovecot 서비스를 기동하고 부팅 시 자동 시작되도록 설정한다.
+
+- name: 2-1) MAIL 서비스 기동 및 활성화 - {{ item }}
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: started
+    enabled: true
+  loop: "{{ mail_services }}"

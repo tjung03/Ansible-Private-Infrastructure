@@ -1,0 +1,11 @@
+---
+# 4) 방화벽 등록
+# firewalld에 dns 서비스를 등록한다.
+# firewalld 설치 및 기동은 별도 firewall role에서 처리한다.
+
+- name: 4) firewalld dns 서비스 등록
+  ansible.posix.firewalld:
+    service: dns
+    permanent: true
+    immediate: true
+    state: enabled

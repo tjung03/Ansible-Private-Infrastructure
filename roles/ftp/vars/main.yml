@@ -1,0 +1,10 @@
+---
+# FTP role vars
+# CentOS Stream 9 + vsftpd 기준으로 role 내부에서 고정적으로 사용할 값을 정의한다.
+
+ftp_packages:
+  - vsftpd
+
+ftp_service_name: vsftpd
+
+ftp_config_file: /etc/vsftpd/vsftpd.conf

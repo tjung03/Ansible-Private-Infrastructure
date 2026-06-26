@@ -1,0 +1,9 @@
+---
+# 2) 서비스 기동
+# vsftpd 서비스를 기동하고 부팅 시 자동 시작되도록 설정한다.
+
+- name: 2-1) vsftpd 서비스 기동 및 활성화
+  ansible.builtin.systemd:
+    name: "{{ ftp_service_name }}"
+    state: started
+    enabled: true

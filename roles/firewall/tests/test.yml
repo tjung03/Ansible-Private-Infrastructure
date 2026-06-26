@@ -1,0 +1,13 @@
+---
+# FIREWALL role test
+# role 적용 후 firewalld 서비스를 기동 상태로 만든다.
+
+- name: FIREWALL role test
+  hosts: all
+  gather_facts: true
+
+  tasks:
+    - name: FIREWALL role 실행
+      ansible.builtin.include_role:
+        name: firewall
+        public: true

@@ -1,0 +1,60 @@
+---
+# 3) 서비스 설정
+# /etc/named.conf 원본을 1회 백업한다.
+# /etc/named.rfc1912.zones는 덮어쓰지 않는다.
+# zone 파일과 role 전용 zone include 파일을 먼저 생성한 뒤 /etc/named.conf를 배포한다.
+# 설정 변경이 있을 때만 named 서비스를 1회 재시작한다.
+
+- name: 3-0) DNS zone 이름 확인
+  ansible.builtin.fail:
+    msg: "dns_zone_name 값이 필요함. inventory_hostname을 FQDN으로 작성하거나 dns_zone_name 변수를 지정해야 함"
+  when: dns_zone_name is not defined or dns_zone_name | length == 0
+
+- name: 3-1) 원본 파일 백업 생성 - /etc/named.conf.OLD
+  ansible.builtin.copy:
+    src: /etc/named.conf
+    dest: /etc/named.conf.OLD
+    remote_src: true
+    force: false
+    owner: root
+    group: named
+    mode: '0640'
+
+- name: 3-2) DNS zone 파일 생성 - /var/named/{{ dns_zone_file }}
+  ansible.builtin.template:
+    src: zone.j2
+    dest: "/var/named/{{ dns_zone_file }}"
+    owner: root
+    group: named
+    mode: '0640'
+    validate: "/usr/sbin/named-checkzone {{ dns_zone_name }} %s"
+  register: dns_zone_file_result
+
+- name: 3-3) DNS zone include 파일 생성 - {{ dns_zone_include_file }}
+  ansible.builtin.template:
+    src: named.zone.include.j2
+    dest: "{{ dns_zone_include_file }}"
+    owner: root
+    group: named
+    mode: '0640'
+  register: dns_zone_include_result
+
+- name: 3-4) DNS 기본 설정 파일 배포 - /etc/named.conf
+  ansible.builtin.template:
+    src: named.conf.j2
+    dest: /etc/named.conf
+    owner: root
+    group: named
+    mode: '0640'
+    backup: true
+    validate: /usr/sbin/named-checkconf %s
+  register: dns_named_conf_result
+
+- name: 3-5) named 서비스 재시작
+  ansible.builtin.systemd:
+    name: "{{ dns_service_name }}"
+    state: restarted
+  when: >
+    dns_named_conf_result.changed or
+    dns_zone_include_result.changed or
+    dns_zone_file_result.changed

@@ -1,0 +1,22 @@
+---
+# MAIL role test
+# role 적용 후 Postfix, Dovecot 설정 검증을 최소 확인한다.
+# postfix check, doveconf 실행은 테스트 목적상 command 모듈을 예외적으로 사용한다.
+
+- name: MAIL role test
+  hosts: mailservers
+  gather_facts: true
+
+  tasks:
+    - name: MAIL role 실행
+      ansible.builtin.include_role:
+        name: mail
+        public: true
+
+    - name: Postfix 설정 확인 - postfix check
+      ansible.builtin.command: /usr/sbin/postfix check
+      changed_when: false
+
+    - name: Dovecot 설정 확인 - doveconf
+      ansible.builtin.command: /usr/bin/doveconf -n
+      changed_when: false

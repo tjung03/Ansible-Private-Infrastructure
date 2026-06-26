@@ -1,0 +1,24 @@
+{% set zone_serial = ansible_date_time.date | regex_replace('-', '') ~ '01' %}
+$TTL 86400
+@       IN SOA  {{ inventory_hostname }}. root.{{ dns_zone_name }}. (
+                {{ zone_serial }} ; serial
+                1D         ; refresh
+                1H         ; retry
+                1W         ; expire
+                3H )       ; minimum
+
+        IN NS   {{ inventory_hostname }}.
+
+{% for group_name in dns_mx_record_groups %}
+{% for host in groups[group_name] | default([]) %}
+@       IN MX   {{ dns_mx_priority }} {{ host }}.
+{% endfor %}
+{% endfor %}
+
+{% for group_name in dns_record_groups %}
+{% for host in groups[group_name] | default([]) %}
+{% if hostvars[host]['ansible_host'] is defined %}
+{{ host.split('.')[0] }}    IN A    {{ hostvars[host]['ansible_host'] }}
+{% endif %}
+{% endfor %}
+{% endfor %}

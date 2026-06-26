@@ -1,0 +1,113 @@
+---
+# 3) 서비스 설정
+# Postfix와 Dovecot 원본 설정을 1회 백업한다.
+# 필요한 설정만 lineinfile로 관리한다.
+# 설정 변경이 있을 때만 postfix, dovecot 서비스를 재시작한다.
+
+- name: 3-0) mail domain 이름 확인
+  ansible.builtin.fail:
+    msg: "mail_domain 값이 필요함. inventory_hostname을 FQDN으로 작성하거나 mail_domain 변수를 지정해야 함"
+  when: mail_domain is not defined or mail_domain | length == 0
+
+- name: 3-1) 원본 파일 백업 생성 - /etc/postfix/main.cf.OLD
+  ansible.builtin.copy:
+    src: "{{ mail_postfix_config_file }}"
+    dest: "{{ mail_postfix_config_file }}.OLD"
+    remote_src: true
+    force: false
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: 3-2) 원본 파일 백업 생성 - /etc/dovecot/dovecot.conf.OLD
+  ansible.builtin.copy:
+    src: "{{ mail_dovecot_config_file }}"
+    dest: "{{ mail_dovecot_config_file }}.OLD"
+    remote_src: true
+    force: false
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: 3-3) Postfix 기본 설정 수정 - /etc/postfix/main.cf
+  ansible.builtin.lineinfile:
+    path: "{{ mail_postfix_config_file }}"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    owner: root
+    group: root
+    mode: '0644'
+  loop:
+    - regexp: '^(#\s*)?myhostname\s*='
+      line: "myhostname = {{ mail_hostname }}"
+    - regexp: '^(#\s*)?mydomain\s*='
+      line: "mydomain = {{ mail_domain }}"
+    - regexp: '^(#\s*)?myorigin\s*='
+      line: "myorigin = $mydomain"
+    - regexp: '^(#\s*)?inet_interfaces\s*='
+      line: "inet_interfaces = all"
+    - regexp: '^(#\s*)?inet_protocols\s*='
+      line: "inet_protocols = ipv4"
+    - regexp: '^(#\s*)?mydestination\s*='
+      line: "mydestination = $myhostname, localhost.$mydomain, localhost, $mydomain"
+    - regexp: '^(#\s*)?home_mailbox\s*='
+      line: "home_mailbox = {{ mail_home_mailbox }}"
+  loop_control:
+    label: "{{ item.line }}"
+  register: mail_postfix_config_result
+
+- name: 3-4) Dovecot protocol 설정 수정 - /etc/dovecot/dovecot.conf
+  ansible.builtin.lineinfile:
+    path: "{{ mail_dovecot_config_file }}"
+    regexp: '^(#\s*)?protocols\s*='
+    line: 'protocols = imap'
+    owner: root
+    group: root
+    mode: '0644'
+  register: mail_dovecot_protocol_result
+
+- name: 3-5) Dovecot mail location 설정 수정 - /etc/dovecot/conf.d/10-mail.conf
+  ansible.builtin.lineinfile:
+    path: "{{ mail_dovecot_mail_config_file }}"
+    regexp: '^(#\s*)?mail_location\s*='
+    line: "mail_location = {{ mail_location }}"
+    owner: root
+    group: root
+    mode: '0644'
+  register: mail_dovecot_mail_result
+
+- name: 3-6) Dovecot plaintext auth 설정 수정 - /etc/dovecot/conf.d/10-auth.conf
+  ansible.builtin.lineinfile:
+    path: "{{ mail_dovecot_auth_config_file }}"
+    regexp: '^(#\s*)?disable_plaintext_auth\s*='
+    line: 'disable_plaintext_auth = no'
+    owner: root
+    group: root
+    mode: '0644'
+  register: mail_dovecot_plaintext_auth_result
+
+- name: 3-7) Dovecot auth mechanisms 설정 수정 - /etc/dovecot/conf.d/10-auth.conf
+  ansible.builtin.lineinfile:
+    path: "{{ mail_dovecot_auth_config_file }}"
+    regexp: '^(#\s*)?auth_mechanisms\s*='
+    line: 'auth_mechanisms = plain login'
+    owner: root
+    group: root
+    mode: '0644'
+  register: mail_dovecot_auth_mechanisms_result
+
+- name: 3-8) postfix 서비스 재시작
+  ansible.builtin.systemd:
+    name: postfix
+    state: restarted
+  when: mail_postfix_config_result.changed
+
+- name: 3-9) dovecot 서비스 재시작
+  ansible.builtin.systemd:
+    name: dovecot
+    state: restarted
+  when: >
+    mail_dovecot_protocol_result.changed or
+    mail_dovecot_mail_result.changed or
+    mail_dovecot_plaintext_auth_result.changed or
+    mail_dovecot_auth_mechanisms_result.changed

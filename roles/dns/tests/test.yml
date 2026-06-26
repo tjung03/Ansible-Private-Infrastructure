@@ -1,0 +1,20 @@
+---
+# DNS role test
+# role 적용 후 DNS 서버가 실제 질의에 응답하는지 최소 확인한다.
+# dig는 bind-utils 패키지에 포함되며, 이 role 실행 과정에서 DNS 서버에 설치된다.
+
+- name: DNS role test
+  hosts: dnsservers
+  gather_facts: true
+
+  tasks:
+    - name: DNS role 실행
+      ansible.builtin.include_role:
+        name: dns
+        public: true
+
+    - name: DNS A 레코드 최소 확인
+      ansible.builtin.command: "dig +short @{{ ansible_host | default(ansible_facts['default_ipv4']['address']) }} {{ dns_test_record }}"
+      register: dns_test_result
+      changed_when: false
+      failed_when: hostvars[dns_test_record]['ansible_host'] not in dns_test_result.stdout_lines

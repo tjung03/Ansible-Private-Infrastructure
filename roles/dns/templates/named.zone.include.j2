@@ -1,0 +1,8 @@
+// Ansible managed
+// DNS role zone include file
+
+zone "{{ dns_zone_name }}" IN {
+        type master;
+        file "{{ dns_zone_file }}";
+        allow-update { none; };
+};

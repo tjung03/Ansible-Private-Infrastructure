@@ -1,0 +1,40 @@
+---
+- name: FIREWALL 기본 구성
+  hosts: all
+  gather_facts: true
+  tasks:
+    - name: FIREWALL role 실행
+      ansible.builtin.include_role:
+        name: firewall
+
+- name: DNS 서버 구성
+  hosts: dnsservers
+  gather_facts: true
+  tasks:
+    - name: DNS role 실행
+      ansible.builtin.include_role:
+        name: dns
+
+- name: WEB 서버 구성
+  hosts: webservers
+  gather_facts: true
+  tasks:
+    - name: WEB role 실행
+      ansible.builtin.include_role:
+        name: web
+
+- name: FTP 서버 구성
+  hosts: ftpservers
+  gather_facts: true
+  tasks:
+    - name: FTP role 실행
+      ansible.builtin.include_role:
+        name: ftp
+
+- name: MAIL 서버 구성
+  hosts: mailservers
+  gather_facts: true
+  tasks:
+    - name: MAIL role 실행
+      ansible.builtin.include_role:
+        name: mail

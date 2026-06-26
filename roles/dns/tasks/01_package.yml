@@ -1,0 +1,13 @@
+---
+# 1) 패키지 설치
+# CentOS Stream 9 환경 확인 후 bind, bind-utils 패키지를 설치한다.
+
+- name: 1) CentOS 환경 확인
+  ansible.builtin.fail:
+    msg: "이 role은 CentOS 환경 기준으로 작성됨"
+  when: ansible_distribution != "CentOS"
+
+- name: 1) DNS 패키지 설치
+  ansible.builtin.dnf:
+    name: "{{ dns_packages }}"
+    state: present

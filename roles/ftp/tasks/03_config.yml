@@ -1,0 +1,75 @@
+---
+# 3) 서비스 설정
+# /etc/vsftpd/vsftpd.conf 원본을 1회 백업한다.
+# 익명 다운로드가 가능하도록 필요한 설정만 lineinfile로 관리한다.
+# /var/ftp/pub 디렉토리와 기본 README.txt 파일을 생성한다.
+# 설정 변경이 있을 때만 vsftpd 서비스를 1회 재시작한다.
+
+- name: 3-1) 원본 파일 백업 생성 - /etc/vsftpd/vsftpd.conf.OLD
+  ansible.builtin.copy:
+    src: "{{ ftp_config_file }}"
+    dest: "{{ ftp_config_file }}.OLD"
+    remote_src: true
+    force: false
+    owner: root
+    group: root
+    mode: '0600'
+
+- name: 3-2) FTP 기본 설정 수정 - /etc/vsftpd/vsftpd.conf
+  ansible.builtin.lineinfile:
+    path: "{{ ftp_config_file }}"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    owner: root
+    group: root
+    mode: '0600'
+  loop:
+    - regexp: '^anonymous_enable='
+      line: 'anonymous_enable=YES'
+    - regexp: '^local_enable='
+      line: 'local_enable=NO'
+    - regexp: '^write_enable='
+      line: 'write_enable=NO'
+    - regexp: '^anon_upload_enable='
+      line: 'anon_upload_enable=NO'
+    - regexp: '^anon_mkdir_write_enable='
+      line: 'anon_mkdir_write_enable=NO'
+    - regexp: '^dirmessage_enable='
+      line: 'dirmessage_enable=YES'
+    - regexp: '^xferlog_enable='
+      line: 'xferlog_enable=YES'
+    - regexp: '^connect_from_port_20='
+      line: 'connect_from_port_20=YES'
+    - regexp: '^listen='
+      line: 'listen=NO'
+    - regexp: '^listen_ipv6='
+      line: 'listen_ipv6=YES'
+  loop_control:
+    label: "{{ item.line }}"
+  register: ftp_config_result
+
+- name: 3-3) FTP 공개 디렉토리 생성 - {{ ftp_public_dir }}
+  ansible.builtin.file:
+    path: "{{ ftp_public_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: 3-4) FTP 기본 파일 생성 - {{ ftp_public_dir }}/{{ ftp_sample_file }}
+  ansible.builtin.copy:
+    content: "{{ ftp_sample_content }}"
+    dest: "{{ ftp_public_dir }}/{{ ftp_sample_file }}"
+    owner: root
+    group: root
+    mode: '0644'
+    backup: true
+  register: ftp_sample_file_result
+
+- name: 3-5) vsftpd 서비스 재시작
+  ansible.builtin.systemd:
+    name: "{{ ftp_service_name }}"
+    state: restarted
+  when: >
+    ftp_config_result.changed or
+    ftp_sample_file_result.changed

@@ -1,0 +1,20 @@
+---
+galaxy_info:
+  author: tjung03
+  description: Configure vsftpd FTP server for private infrastructure
+  company: private
+  license: MIT
+  min_ansible_version: "2.14"
+
+  platforms:
+    - name: EL
+      versions:
+        - "9"
+
+  galaxy_tags:
+    - ftp
+    - vsftpd
+    - centos
+    - infrastructure
+
+dependencies: []

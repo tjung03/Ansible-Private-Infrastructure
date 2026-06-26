@@ -1,0 +1,9 @@
+---
+# FIREWALL role defaults
+# 사용자가 inventory, group_vars, host_vars, extra_vars 등으로 변경할 수 있는 기본값을 정의한다.
+
+# firewalld 서비스 활성화 여부
+firewall_enabled: true
+
+# firewalld 서비스 실행 여부
+firewall_started: true

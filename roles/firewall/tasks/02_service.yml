@@ -1,0 +1,9 @@
+---
+# 2) 서비스 기동
+# firewalld 서비스를 기동하고 부팅 시 자동 시작되도록 설정한다.
+
+- name: 2-1) firewalld 서비스 기동 및 활성화
+  ansible.builtin.systemd:
+    name: "{{ firewall_service_name }}"
+    state: "{{ 'started' if firewall_started | bool else 'stopped' }}"
+    enabled: "{{ firewall_enabled | bool }}"
