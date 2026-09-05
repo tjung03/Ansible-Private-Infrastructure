@@ -68,6 +68,20 @@ dig +short @192.168.10.11 example.com MX
 
 MX 기대값은 `10 ansible4.example.com.`이다. 설정 명령의 출력과 서비스 상태·리스너를 함께 확인하며, 이를 실제 사용자 메일 전달 성공으로 간주하지 않는다.
 
+## Dovecot 2.4 호환성
+
+이 Role이 쓰는 설정에는 Dovecot 2.4에서 변경된 항목이 있다. [공식 이행 문서](https://doc.dovecot.org/2.4.0/installation/upgrade/2.3-to-2.4.html)는 2.3 설정을 변경 없이 사용할 수 없다고 명시한다.
+
+| 현재 코드의 항목 | 2.4의 변경 | 영향 |
+|---|---|---|
+| `disable_plaintext_auth = no` | `auth_allow_cleartext`로 대체. 기존 허용 의미는 `yes`에 대응 | 기존 `no` 값을 그대로 복사하지 않는다. TLS 없는 인증을 권장한다는 의미는 아니다 |
+| `mail_location = maildir:~/Maildir` | `mail_driver = maildir`, `mail_path = ~/Maildir` 등으로 분리 | 저장 형식·경로 대응이며, 전체 설정 이행과 실행 검증은 별도 |
+| 기존 기본 설정 파일에 항목 추가 | `dovecot_config_version`, `dovecot_storage_version` 등 필수 설정과 구문 변경 | 배포판 기본 파일까지 함께 검토해야 함 |
+
+대체 항목의 의미는 [Dovecot 2.4 설정 목록](https://doc.dovecot.org/2.4.0/core/summaries/settings.html)의 `auth_allow_cleartext`, `mail_driver`, `mail_path`를 기준으로 한다.
+
+확인일은 2026-09-05다. 실제 설치된 Dovecot 버전은 저장소만으로 확정할 수 없으며, CentOS 패키지가 곧 2.4라는 의미는 아니다. 기존 구현을 유지한 상태로 2.4 이식 시 필요한 검토 범위를 설명한다.
+
 ## 범위와 적용 조건
 
 - OS 검사는 CentOS만 허용하며, firewalld는 사전에 설치·기동되어 있어야 한다.
