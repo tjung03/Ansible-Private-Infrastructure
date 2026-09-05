@@ -17,7 +17,7 @@ CentOS Stream 9의 `ftpservers`에 vsftpd를 설치하고 익명 다운로드용
 | `connect_from_port_20` | `YES` | Active 모드 데이터 연결의 출발 포트 설정 |
 | `listen`, `listen_ipv6` | `NO`, `YES` | 독립 실행 리스너 설정 |
 
-공개 디렉터리는 root 소유 `0755`, 기본 파일은 `0644`로 생성한다. 기본 파일 변경 시 백업을 생성하며, 설정 또는 기본 파일이 변경되면 vsftpd를 한 번 재시작한다. Handler 대신 등록한 Task 결과의 `changed`를 사용한다.
+공개 디렉터리는 root 소유 `0755`, 기본 파일은 `0644`로 생성한다. 기본 파일 변경 시 백업을 생성하며, 설정 또는 기본 파일이 변경되면 vsftpd를 한 번 재시작한다. 재시작 조건에는 등록한 Task 결과의 `changed`를 사용한다.
 
 ## 변수
 
@@ -33,9 +33,9 @@ CentOS Stream 9의 `ftpservers`에 vsftpd를 설치하고 익명 다운로드용
 
 [내부 변수](vars/main.yml)는 패키지·서비스 `vsftpd`와 설정 경로 `/etc/vsftpd/vsftpd.conf`를 정의한다.
 
-`ftp_root_dir`·`ftp_public_dir`는 생성할 경로에만 반영된다. vsftpd의 `anon_root`나 FTP 계정 홈 경로를 수정하지 않는다. 다른 경로를 사용할 때는 서버의 실제 익명 루트와 SELinux Context를 별도로 맞춰야 한다. 테스트 URL의 `/pub/`도 디렉터리 변수에 따라 자동 변경되지 않는다.
+`ftp_root_dir`·`ftp_public_dir`는 파일 배포 경로를 정한다. 경로를 바꿀 때는 vsftpd의 익명 루트, SELinux Context, `ftp_test_url`을 함께 맞춘다.
 
-## 실행과 검증
+## 실행과 확인
 
 [공통 실행 조건](../../README.md#실행-조건)을 준비하고 저장소 루트에서 실행한다.
 
@@ -44,7 +44,7 @@ ansible-navigator run -m stdout playbook.yml --limit ftpservers
 ansible-navigator run -m stdout roles/ftp/tests/test.yml
 ```
 
-첫 명령은 FTP 노드에 firewall과 ftp를 적용한다. [테스트](tests/test.yml)는 ftp를 재적용한 뒤 **FTP 서버 자신에서** `get_url`로 파일을 내려받는다. 파일 내용에 대한 별도 Assertion이나 외부 클라이언트 접근 검사는 없다.
+첫 명령은 FTP 노드에 firewall과 ftp를 적용한다. [테스트](tests/test.yml)는 ftp를 재적용한 뒤 **FTP 서버 자신에서** `get_url`로 파일을 내려받는다.
 
 서버 내부와 별도 클라이언트에서 실행할 절차를 구분한다.
 
@@ -65,9 +65,5 @@ sudo systemctl status vsftpd
 sudo ss -lntup
 sudo firewall-cmd --query-service=ftp
 ```
-
-## 범위
-
-firewalld 설치·기동은 사전 조건이며, OS 검사는 CentOS만 허용한다. 업로드, 인증 사용자 구성, FTPS/TLS, Passive 포트 범위와 NAT 설정, SELinux 변경은 포함하지 않는다. 서버 내부 다운로드 성공만으로 외부 FTP 데이터 연결까지 검증된 것으로 볼 수 없다.
 
 작성자: tjung03 · [MIT License](LICENSE)
