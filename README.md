@@ -21,12 +21,12 @@ DNS는 같은 [Inventory](inventory)의 호스트 주소와 `mailservers` 그룹
 
 ```mermaid
 flowchart TB
-    I["Inventory: 호스트·그룹·IP"] --> P["Control Node: playbook.yml"]
-    I --> Z["DNS Zone 템플릿: A·MX 레코드"]
-    P --> D["DNS 노드: firewall + dns"]
-    P --> W["WEB 노드: firewall + web"]
-    P --> F["FTP 노드: firewall + ftp"]
-    P --> M["MAIL 노드: firewall + mail"]
+    I["Inventory"] --> P["Control Node / Playbook"]
+    I --> Z["Zone 템플릿 / A·MX"]
+    P --> D["DNS 노드"]
+    P --> W["WEB 노드"]
+    P --> F["FTP 노드"]
+    P --> M["MAIL 노드"]
     Z --> D
 ```
 
